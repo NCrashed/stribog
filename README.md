@@ -1,5 +1,7 @@
 # Stribog 
 
+[![Build Status](https://travis-ci.org/NCrashed/stribog.svg?branch=master)](https://travis-ci.org/NCrashed/stribog)
+
 This is a collection library that holds all my compile-time utilities developed over long time for several projects. The main target of the library is template magic and code generation.
 
 There are two components in the library:
