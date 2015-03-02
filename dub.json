@@ -1,0 +1,10 @@
+{
+    "name" : "stribog",
+    "description" : "Utilities collection for D programming language involving heavy compile-time magic",
+    "copyright": "Copyright © 2014-2015, Gushcha Anton",
+    "authors": [
+          "Anton Gushcha (NCrashed <ncrashed@gmail.com>)"
+    ],
+    "targetType": "sourceLibrary",
+    "license": "BSL-1.0"
+}

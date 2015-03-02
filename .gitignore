@@ -1,0 +1,9 @@
+.git
+.dub
+.buildpath
+.project
+*.exe
+*.lib
+*.obj
+*.o
+*.a
