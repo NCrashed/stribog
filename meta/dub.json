@@ -1,0 +1,5 @@
+{
+    "name": "meta",
+    "description": "Meta programming utilities, mainly extending std.traits and std.typecons",
+    "targetType": "sourceLibrary"
+}
