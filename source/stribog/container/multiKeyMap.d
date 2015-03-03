@@ -14,39 +14,6 @@ mixin template makeMultiKeyMap(string mapTypeName, KeyValuesRaw...)
     import std.conv;
     import std.traits : fullyQualifiedName;
 
-    mixin(q{class }~mapTypeName~q{
-    {
-        private alias KeyValues = SplitKeyValue!KeyValuesRaw;
-        
-        auto opIndex(K)(K val)
-            if(hasKeyImpl!(K, KeyValues))
-        {
-            alias KV = getPair!(K, KeyValues); 
-            mixin("return " ~ KV.mapName!() ~ "[val];");  
-        }
-        
-        void opIndexAssign(K,V)(V val, K key)
-            if(hasKeyImpl!(K, KeyValues) && is(getPair!(K, KeyValues).Value == V))
-        {
-            alias KV = getPair!(K, KeyValues); 
-            mixin(KV.mapName!() ~ "[key] = val;"); 
-        }
-        
-        bool hasKey(K)(K key) if(!hasKeyImpl!(K, KeyValues))
-        {
-            return false;
-        }
-        
-        bool hasKey(K)(K key) if(hasKeyImpl!(K, KeyValues))
-        {
-            alias KV = getPair!(K, KeyValues); 
-            mixin("return (key in " ~ KV.mapName!() ~ ") !is null;");
-        }
-        
-        //pragma(msg, GenMaps!KeyValues);
-        mixin(GenMaps!KeyValues);
-    }});
-
     private template KeyValue(_Key, _Value, size_t _i)
     {
         enum i = _i;
@@ -132,6 +99,39 @@ mixin template makeMultiKeyMap(string mapTypeName, KeyValuesRaw...)
         
         alias getPair = staticFold!(getPairImpl, StrictExpressionList!(), T).expand[0];
     }
+    
+    mixin(q{class }~mapTypeName~q{
+    {
+        private alias KeyValues = SplitKeyValue!KeyValuesRaw;
+        
+        auto opIndex(K)(K val)
+            if(hasKeyImpl!(K, KeyValues))
+        {
+            alias KV = getPair!(K, KeyValues); 
+            mixin("return " ~ KV.mapName!() ~ "[val];");  
+        }
+        
+        void opIndexAssign(K,V)(V val, K key)
+            if(hasKeyImpl!(K, KeyValues) && is(getPair!(K, KeyValues).Value == V))
+        {
+            alias KV = getPair!(K, KeyValues); 
+            mixin(KV.mapName!() ~ "[key] = val;"); 
+        }
+        
+        bool hasKey(K)(K key) if(!hasKeyImpl!(K, KeyValues))
+        {
+            return false;
+        }
+        
+        bool hasKey(K)(K key) if(hasKeyImpl!(K, KeyValues))
+        {
+            alias KV = getPair!(K, KeyValues); 
+            mixin("return (key in " ~ KV.mapName!() ~ ") !is null;");
+        }
+        
+        //pragma(msg, GenMaps!KeyValues);
+        mixin(GenMaps!KeyValues);
+    }});
 }
 
 version(unittest)
