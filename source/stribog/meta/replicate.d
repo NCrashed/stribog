@@ -15,16 +15,11 @@ import stribog.meta.satisfy;
 */
 template staticReplicate(TS...)
 {
-    static if(is(TS[0]))
-        alias T = TS[0];
-    else
-        enum T = TS[0];
-        
     enum n = TS[1];
     
     static if(n > 0)
     {
-        alias staticReplicate = ExpressionList!(T, staticReplicate!(T, n-1));
+        alias staticReplicate = ExpressionList!(TS[0], staticReplicate!(TS[0], n-1));
     }
     else
     {

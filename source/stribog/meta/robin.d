@@ -34,7 +34,7 @@ template staticRobin(SF...)
     {        
         private template takeByIndex(alias T)
         {
-            static if(is(T.expand[i]))
+            static if(!__traits(compiles, {enum takeByIndex = T.expand[i];}))
                 alias takeByIndex = T.expand[i];
             else
                 enum takeByIndex = T.expand[i];
