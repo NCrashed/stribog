@@ -12,3 +12,4 @@ public import stribog.meta.overload;
 public import stribog.meta.replicate;
 public import stribog.meta.robin;
 public import stribog.meta.satisfy;
+public import stribog.meta.sort;

@@ -16,7 +16,8 @@ There are two components in the library:
   * template robin function
   * compile time foreach unwinding
   * aggregates members introspections
-
+  * compile-time stable sorting
+  
 2. [container](source/container) - specific containers with compile-time code generation:
 
   * multi key maps - operates like Boost MPL maps, you can define several key-value type pairs.
