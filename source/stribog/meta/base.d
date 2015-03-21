@@ -182,16 +182,29 @@ unittest
 *   The template is helpful while debugging. DMD generates ugly mangled names for
 *   templates after several transformations.
 */
-template staticToString(alias T)
+template staticToString(T...)
 {
-    static if(__traits(compiles, T.toString!())) {
-    	enum staticToString = T.toString!();
+    private template convertOne(alias U)
+    {
+        static if(__traits(compiles, U.staticToStringImpl!())) {
+            enum convertOne = U.staticToStringImpl!();
+        }
+        else static if(__traits(compiles, U.staticToStringImpl)) { // special case for naked enum
+            enum convertOne = U.staticToStringImpl;
+        }
+        else {
+            enum convertOne = U.stringof;
+        }
     }
-    else static if(__traits(compiles, T.toString)) { // special case for naked enum
-        enum staticToString = T.toString;
+    
+    static if(T.length == 0) {
+        enum staticToString = "";
     }
+    else static if(T.length == 1) {
+        enum staticToString = convertOne!(T[0]);
+    } 
     else {
-        enum staticToString = T.stringof;
+        enum staticToString = convertOne!(T[0]) ~ ", " ~ staticToString!(T[1 .. $]);
     }
 }
 /// Example
@@ -201,14 +214,14 @@ unittest
     static assert(staticToString!(Dummy!int) == "Dummy!int");
     
     template DummyCustom1(T) {
-        template toString() {
-            enum toString = T.stringof;
+        template staticToStringImpl() {
+            enum staticToStringImpl = T.stringof;
         }
     }
     static assert(staticToString!(DummyCustom1!int) == "int");
     
     template DummyCustom2(T) {
-        enum toString = T.stringof;
+        enum staticToStringImpl = T.stringof;
     }
     static assert(staticToString!(DummyCustom2!int) == "int");
 }
