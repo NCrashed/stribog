@@ -12,6 +12,7 @@ mixin template makeMultiKeyMap(string mapTypeName, KeyValuesRaw...)
 {
     import stribog.meta;
     import std.conv;
+    import std.typetuple : Reverse;
     import std.traits : fullyQualifiedName;
 
     private template KeyValue(_Key, _Value, size_t _i)
@@ -100,9 +101,62 @@ mixin template makeMultiKeyMap(string mapTypeName, KeyValuesRaw...)
         alias getPair = staticFold!(getPairImpl, StrictExpressionList!(), T).expand[0];
     }
     
+    private template takeKey(alias T) {
+        alias takeKey = T.Key;
+    }
+    
+    private template takeValue(alias T) {
+        alias takeValue = T.Value;
+    }
+    
     mixin(q{class }~mapTypeName~q{
     {
         private alias KeyValues = SplitKeyValue!KeyValuesRaw;
+        
+        public alias KeyTypes = Reverse!(staticMap!(takeKey, KeyValues));
+        public alias ValueTypes = Reverse!(staticMap!(takeValue, KeyValues));
+        
+        size_t length(K)()
+            if(hasKeyImpl!(K, KeyValues))
+        {
+            alias KV = getPair!(K, KeyValues); 
+            mixin("return " ~ KV.mapName!() ~ ".length;");  
+        }
+        
+        auto keys(K)()
+        	if(hasKeyImpl!(K, KeyValues))
+        {
+            alias KV = getPair!(K, KeyValues); 
+            mixin("return " ~ KV.mapName!() ~ ".keys;");  
+        }
+        
+        auto values(K)()
+            if(hasKeyImpl!(K, KeyValues))
+        {
+            alias KV = getPair!(K, KeyValues); 
+            mixin("return " ~ KV.mapName!() ~ ".values;");  
+        }
+        
+        auto byKey(K)()
+            if(hasKeyImpl!(K, KeyValues))
+        {
+            alias KV = getPair!(K, KeyValues); 
+            mixin("return " ~ KV.mapName!() ~ ".byKey;");  
+        }
+        
+        auto byValue(K)()
+            if(hasKeyImpl!(K, KeyValues))
+        {
+            alias KV = getPair!(K, KeyValues); 
+            mixin("return " ~ KV.mapName!() ~ ".byValue;");  
+        }
+        
+        auto byKeyValue(K)()
+            if(hasKeyImpl!(K, KeyValues))
+        {
+            alias KV = getPair!(K, KeyValues); 
+            mixin("return " ~ KV.mapName!() ~ ".byKeyValue;");  
+        }
         
         auto opIndex(K)(K val)
             if(hasKeyImpl!(K, KeyValues))
@@ -116,6 +170,13 @@ mixin template makeMultiKeyMap(string mapTypeName, KeyValuesRaw...)
         {
             alias KV = getPair!(K, KeyValues); 
             mixin(KV.mapName!() ~ "[key] = val;"); 
+        }
+        
+        auto remove(K)(K val)
+            if(hasKeyImpl!(K, KeyValues))
+        {
+            alias KV = getPair!(K, KeyValues); 
+            mixin("return " ~ KV.mapName!() ~ ".remove(val);");  
         }
         
         bool hasKey(K)(K key) if(!hasKeyImpl!(K, KeyValues))
@@ -144,25 +205,44 @@ version(unittest)
         ulong, char[17],
         int[42], bool
     );
+    
+    static assert(staticEqual!(
+            StrictExpressionList!(MultiKeyMap.KeyTypes),
+            StrictExpressionList!(int, char, ulong, int[42]))
+    );
+    
+    static assert(staticEqual!(
+            StrictExpressionList!(MultiKeyMap.ValueTypes),
+            StrictExpressionList!(uint, ubyte, char[17], bool))
+    );
 }
 unittest
 {
     MultiKeyMap map = new MultiKeyMap();
     
+    assert(map.keys!int == []);
     map[cast(int)5] = 42u; 
     assert(map[cast(int)5] == 42u);
+    assert(map.keys!int == [5]);
     
     map['c'] = cast(ubyte)42u; 
     assert(map['c'] == cast(ubyte)42u);
+    assert(map.keys!int == [5]);
+    assert(map.keys!char == ['c']);
     
     char[17] str = "1234567890qwertyu".dup[0 .. 17];
     map[cast(ulong)23u] = str; 
     assert(map[cast(ulong)23u] == str);
+    assert(map.keys!ulong == [23u]);
     
     int[42] arr = 42.repeat(42).array[0 .. 42];
     map[arr] = true; 
     assert(map[arr]);
-    
+    assert(map.keys!(int[42]) == [arr]);
+        
     assert(map.hasKey!char('c'));
+    map.remove!char('c');
+    assert(!map.hasKey!char('c'));
+    
     assert(!map.hasKey!bool(true));
 }
